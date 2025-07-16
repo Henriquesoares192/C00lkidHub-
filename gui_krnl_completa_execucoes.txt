@@ -1,0 +1,333 @@
+
+-- Serviços
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Função auxiliar para criar UI
+local function createUI(className, props)
+    local inst = Instance.new(className)
+    for k, v in pairs(props) do
+        inst[k] = v
+    end
+    return inst
+end
+
+-- Remover GUI antiga
+local guiName = "c00lkidHub"
+local oldGui = game.CoreGui:FindFirstChild(guiName)
+if oldGui then oldGui:Destroy() end
+
+-- Criar GUI principal
+local screenGui = createUI("ScreenGui", {
+    Name = guiName,
+    Parent = game.CoreGui,
+    ResetOnSpawn = false
+})
+
+local mainFrame = createUI("Frame", {
+    Size = UDim2.new(0, 620, 0, 460),
+    Position = UDim2.new(0.5, -310, 0.5, -230),
+    BackgroundColor3 = Color3.fromRGB(25, 25, 25),
+    BorderColor3 = Color3.fromRGB(255, 0, 0),
+    BorderSizePixel = 3,
+    Active = true,
+    Draggable = true,
+    Parent = screenGui
+})
+
+-- Botão de abrir/fechar GUI
+local toggle = true
+local toggleBtn = createUI("TextButton", {
+    Text = "Abrir/Fechar",
+    Size = UDim2.new(0, 100, 0, 35),
+    Position = UDim2.new(0, 5, 0, 5),
+    BackgroundColor3 = Color3.fromRGB(180, 30, 30),
+    TextColor3 = Color3.new(1, 1, 1),
+    Font = Enum.Font.GothamBold,
+    TextSize = 18,
+    Parent = screenGui,
+    ZIndex = 10
+})
+toggleBtn.MouseButton1Click:Connect(function()
+    toggle = not toggle
+    mainFrame.Visible = toggle
+end)
+
+-- Criar abas
+local sidebar = createUI("Frame", {
+    Size = UDim2.new(0, 130, 1, 0),
+    BackgroundColor3 = Color3.fromRGB(40, 40, 40),
+    Parent = mainFrame
+})
+createUI("UIListLayout", {Parent = sidebar, Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder})
+
+local contentFrame = createUI("Frame", {
+    Size = UDim2.new(1, -130, 1, 0),
+    Position = UDim2.new(0, 130, 0, 0),
+    BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+    Parent = mainFrame
+})
+createUI("UICorner", {Parent = contentFrame})
+
+local tabs = {}
+local function createTab(name)
+    local btn = createUI("TextButton", {
+        Text = name,
+        Size = UDim2.new(1, -10, 0, 40),
+        BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+        TextColor3 = Color3.new(1, 1, 1),
+        Font = Enum.Font.GothamBold,
+        TextSize = 16,
+        Parent = sidebar,
+        BorderSizePixel = 0
+    })
+    local stroke = Instance.new("UIStroke", btn)
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Thickness = 2
+    coroutine.wrap(function()
+        while btn.Parent do
+            stroke.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+            wait(0.1)
+        end
+    end)()
+    local frame = createUI("ScrollingFrame", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        CanvasSize = UDim2.new(0, 0, 1, 0),
+        ScrollBarThickness = 6,
+        Visible = false,
+        Parent = contentFrame
+    })
+    createUI("UIListLayout", {Parent = frame, Padding = UDim.new(0, 5)})
+    btn.MouseButton1Click:Connect(function()
+        for _, f in pairs(tabs) do f.Visible = false end
+        frame.Visible = true
+    end)
+    return frame
+end
+
+-- Abas: Poderes, Skins, ESP, TP, Execuções
+tabs[1] = createTab("Poderes")
+tabs[2] = createTab("Skins")
+tabs[3] = createTab("ESP")
+tabs[4] = createTab("TP")
+tabs[5] = createTab("Execuções")
+tabs[1].Visible = true
+
+-- Poderes
+local poderes = {
+    "Soco Flamejante", "Explosão", "Congelamento", "Lança de Energia", "Golpe Voador",
+    "Corte de Vento", "Tiro de Fogo", "Choque Elétrico", "Pulso Sônico", "Tornado"
+}
+for _, nome in ipairs(poderes) do
+    local btn = createUI("TextButton", {
+        Text = nome,
+        Size = UDim2.new(1, -20, 0, 40),
+        BackgroundColor3 = Color3.fromRGB(90, 20, 20),
+        TextColor3 = Color3.new(1, 1, 1),
+        Font = Enum.Font.GothamBold,
+        TextSize = 18,
+        Parent = tabs[1],
+        BorderSizePixel = 0
+    })
+end
+
+-- Skins
+local skins = {"Neon Vermelho", "C00lkid", "Banana", "Nyan Cat", "Slenderman"}
+for _, nome in ipairs(skins) do
+    local btn = createUI("TextButton", {
+        Text = nome,
+        Size = UDim2.new(1, -20, 0, 40),
+        BackgroundColor3 = Color3.fromRGB(40, 40, 40),
+        TextColor3 = Color3.new(1, 1, 1),
+        Font = Enum.Font.GothamBold,
+        TextSize = 18,
+        Parent = tabs[2],
+        BorderSizePixel = 0
+    })
+end
+
+-- ESP
+local espEnabled = false
+local espHighlights = {}
+local espBtn = createUI("TextButton", {
+    Text = "ESP: OFF",
+    Size = UDim2.new(1, -20, 0, 40),
+    BackgroundColor3 = Color3.fromRGB(30, 90, 30),
+    TextColor3 = Color3.new(1, 1, 1),
+    Font = Enum.Font.GothamBold,
+    TextSize = 18,
+    Parent = tabs[3],
+    BorderSizePixel = 0
+})
+espBtn.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    espBtn.Text = espEnabled and "ESP: ON" or "ESP: OFF"
+    if espEnabled then
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character then
+                local h = Instance.new("Highlight", screenGui)
+                h.Adornee = plr.Character
+                h.FillColor = Color3.fromRGB(0, 255, 0)
+                h.OutlineColor = Color3.fromRGB(0, 200, 0)
+                h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                espHighlights[plr.Name] = h
+            end
+        end
+    else
+        for _, h in pairs(espHighlights) do h:Destroy() end
+        espHighlights = {}
+    end
+end)
+
+-- TP
+local function createTPButton(plr)
+    local btn = createUI("TextButton", {
+        Text = plr.Name,
+        Size = UDim2.new(1, -20, 0, 35),
+        BackgroundColor3 = Color3.fromRGB(50, 50, 90),
+        TextColor3 = Color3.new(1, 1, 1),
+        Font = Enum.Font.GothamBold,
+        TextSize = 16,
+        Parent = tabs[4],
+        BorderSizePixel = 0
+    })
+    btn.MouseButton1Click:Connect(function()
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local target = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+        if hrp and target then
+            hrp.CFrame = target.CFrame + Vector3.new(0, 5, 0)
+        end
+    end)
+end
+
+local function updateTP()
+    for _, c in pairs(tabs[4]:GetChildren()) do
+        if c:IsA("TextButton") then c:Destroy() end
+    end
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            createTPButton(plr)
+        end
+    end
+end
+updateTP()
+Players.PlayerAdded:Connect(updateTP)
+Players.PlayerRemoving:Connect(updateTP)
+
+-- Execuções
+local EXECUTION_RANGE = 15
+local CurrentTarget = nil
+local ExecutionType = "Facada"
+local executarBtn = createUI("TextButton", {
+    Text = "EXECUTAR",
+    Size = UDim2.new(1, -20, 0, 40),
+    BackgroundColor3 = Color3.fromRGB(200, 0, 0),
+    TextColor3 = Color3.new(1, 1, 1),
+    Font = Enum.Font.GothamBold,
+    TextSize = 18,
+    Visible = false,
+    Parent = tabs[5],
+    BorderSizePixel = 0
+})
+local tipos = {"Facada", "Atropelamento", "Congelamento", "Explosão", "Mão Gigante"}
+for _, tipo in ipairs(tipos) do
+    local btn = createUI("TextButton", {
+        Text = tipo,
+        Size = UDim2.new(1, -20, 0, 30),
+        BackgroundColor3 = Color3.fromRGB(60, 60, 60),
+        TextColor3 = Color3.new(1, 1, 1),
+        Font = Enum.Font.GothamBold,
+        TextSize = 16,
+        Parent = tabs[5],
+        BorderSizePixel = 0
+    })
+    btn.MouseButton1Click:Connect(function()
+        ExecutionType = tipo
+    end)
+end
+
+local function findNearbyTarget()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local dist = (plr.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+            if dist <= EXECUTION_RANGE then
+                return plr
+            end
+        end
+    end
+    return nil
+end
+
+RunService.Heartbeat:Connect(function()
+    CurrentTarget = findNearbyTarget()
+    executarBtn.Visible = CurrentTarget ~= nil
+end)
+
+executarBtn.MouseButton1Click:Connect(function()
+    if not CurrentTarget or not CurrentTarget.Character then return end
+    local targetHRP = CurrentTarget.Character:FindFirstChild("HumanoidRootPart")
+    if not targetHRP then return end
+
+    if ExecutionType == "Facada" then
+        local knife = Instance.new("Part", workspace)
+        knife.Size = Vector3.new(1,1,5)
+        knife.BrickColor = BrickColor.Red()
+        knife.Material = Enum.Material.Metal
+        knife.CanCollide = false
+        knife.Anchored = true
+        knife.CFrame = targetHRP.CFrame * CFrame.new(0, 2, -1)
+        Debris:AddItem(knife, 3)
+        CurrentTarget.Character:BreakJoints()
+
+    elseif ExecutionType == "Atropelamento" then
+        local car = Instance.new("Part", workspace)
+        car.Size = Vector3.new(8, 4, 12)
+        car.Position = targetHRP.Position + Vector3.new(0, 5, -50)
+        car.BrickColor = BrickColor.new("Really black")
+        car.Anchored = false
+        car.CanCollide = false
+        car.Velocity = Vector3.new(0, 0, 180)
+        Debris:AddItem(car, 5)
+        car.Touched:Connect(function(hit)
+            if hit:IsDescendantOf(CurrentTarget.Character) then
+                CurrentTarget.Character:BreakJoints()
+                Instance.new("Explosion", workspace).Position = targetHRP.Position
+            end
+        end)
+
+    elseif ExecutionType == "Congelamento" then
+        for _, part in pairs(CurrentTarget.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Material = Enum.Material.Ice
+                part.BrickColor = BrickColor.new("Pastel Blue")
+            end
+        end
+        wait(2)
+        CurrentTarget.Character:BreakJoints()
+
+    elseif ExecutionType == "Explosão" then
+        local expl = Instance.new("Explosion", workspace)
+        expl.Position = targetHRP.Position
+        expl.BlastRadius = 8
+
+    elseif ExecutionType == "Mão Gigante" then
+        local mao = Instance.new("Part", workspace)
+        mao.Size = Vector3.new(15, 5, 15)
+        mao.Anchored = true
+        mao.BrickColor = BrickColor.new("Crimson")
+        mao.Position = targetHRP.Position + Vector3.new(0, 60, 0)
+        Debris:AddItem(mao, 5)
+        local tween = TweenService:Create(mao, TweenInfo.new(1), {Position = targetHRP.Position + Vector3.new(0, 3, 0)})
+        tween:Play()
+        tween.Completed:Wait()
+        CurrentTarget.Character:BreakJoints()
+    end
+end)
