@@ -135,6 +135,103 @@ for _, nome in ipairs(poderes) do
         Parent = tabs[1],
         BorderSizePixel = 0
     })
+
+    btn.MouseButton1Click:Connect(function()
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        if nome == "Soco Flamejante" then
+            local punch = Instance.new("Part", workspace)
+            punch.Size = Vector3.new(3, 3, 3)
+            punch.Position = hrp.Position + hrp.CFrame.LookVector * 5
+            punch.Anchored = true
+            punch.Material = Enum.Material.Neon
+            punch.BrickColor = BrickColor.new("Bright red")
+            local fire = Instance.new("Fire", punch)
+            fire.Heat = 10
+            Debris:AddItem(punch, 2)
+
+        elseif nome == "Explosão" then
+            local e = Instance.new("Explosion", workspace)
+            e.Position = hrp.Position + hrp.CFrame.LookVector * 5
+
+        elseif nome == "Congelamento" then
+            local ice = Instance.new("Part", workspace)
+            ice.Size = Vector3.new(4,4,4)
+            ice.Position = hrp.Position + hrp.CFrame.LookVector * 5
+            ice.Anchored = true
+            ice.Material = Enum.Material.Ice
+            ice.BrickColor = BrickColor.new("Pastel Blue")
+            Debris:AddItem(ice, 3)
+
+        elseif nome == "Lança de Energia" then
+            local beam = Instance.new("Part", workspace)
+            beam.Size = Vector3.new(1,1,20)
+            beam.CFrame = hrp.CFrame * CFrame.new(0, 0, -10)
+            beam.Anchored = true
+            beam.Material = Enum.Material.Neon
+            beam.BrickColor = BrickColor.new("Bright violet")
+            Debris:AddItem(beam, 2)
+
+        elseif nome == "Golpe Voador" then
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum then
+                hum:ChangeState(Enum.HumanoidStateType.Jumping)
+                hrp.Velocity = Vector3.new(0, 150, 0)
+            end
+
+        elseif nome == "Corte de Vento" then
+            local wind = Instance.new("Part", workspace)
+            wind.Size = Vector3.new(8, 0.2, 2)
+            wind.CFrame = hrp.CFrame * CFrame.new(0, 0, -5)
+            wind.Anchored = true
+            wind.BrickColor = BrickColor.new("Institutional white")
+            wind.Material = Enum.Material.ForceField
+            Debris:AddItem(wind, 2)
+
+        elseif nome == "Tiro de Fogo" then
+            local bullet = Instance.new("Part", workspace)
+            bullet.Size = Vector3.new(1,1,1)
+            bullet.Position = hrp.Position
+            bullet.BrickColor = BrickColor.new("Bright orange")
+            bullet.Material = Enum.Material.Neon
+            bullet.Velocity = hrp.CFrame.LookVector * 150
+            bullet.CanCollide = false
+            bullet.Anchored = false
+            bullet.Name = "FireBullet"
+            bullet.Parent = workspace
+            Debris:AddItem(bullet, 2)
+
+        elseif nome == "Choque Elétrico" then
+            local shock = Instance.new("Part", workspace)
+            shock.Size = Vector3.new(6, 6, 6)
+            shock.Shape = Enum.PartType.Ball
+            shock.Position = hrp.Position + Vector3.new(0,5,0)
+            shock.Anchored = true
+            shock.Material = Enum.Material.Neon
+            shock.BrickColor = BrickColor.new("Electric blue")
+            Debris:AddItem(shock, 2)
+
+        elseif nome == "Pulso Sônico" then
+            local sonic = Instance.new("Part", workspace)
+            sonic.Size = Vector3.new(10, 0.2, 10)
+            sonic.Position = hrp.Position
+            sonic.Anchored = true
+            sonic.BrickColor = BrickColor.new("Really black")
+            sonic.Material = Enum.Material.ForceField
+            Debris:AddItem(sonic, 1.5)
+
+        elseif nome == "Tornado" then
+            local tornado = Instance.new("Part", workspace)
+            tornado.Size = Vector3.new(5, 20, 5)
+            tornado.Anchored = true
+            tornado.Position = hrp.Position + hrp.CFrame.LookVector * 10
+            tornado.Material = Enum.Material.Neon
+            tornado.BrickColor = BrickColor.new("Mid gray")
+            Debris:AddItem(tornado, 4)
+        end
+    end)
 end
 -- Skins com efeitos reais
 local skins = {
